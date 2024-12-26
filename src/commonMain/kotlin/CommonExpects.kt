@@ -14,3 +14,5 @@ expect fun makeProcessGroup(name: String): Unit
 
 // call $ which $executable on the JVM
 expect suspend fun findExecutable(executable: String): String
+
+expect fun hideConsole(): Unit

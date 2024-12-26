@@ -5,6 +5,9 @@ fun main(args: Array<String>) {
     try {
         val config = Shared.readConfig()
         makeProcessGroup(config.groupName)
+        if (config.hideConsole) {
+            hideConsole()
+        }
         val (_, status) = runBlocking {
             executeCommandAndCaptureOutput(listOf(config.execute, *args), ExecuteCommandOptions(config.directory, abortOnError = false, redirectStderr = true, trim = false))
         }

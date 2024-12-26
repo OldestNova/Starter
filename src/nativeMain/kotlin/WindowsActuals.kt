@@ -80,3 +80,8 @@ actual fun makeProcessGroup(name: String): Unit {
         println("Current process successfully assigned to Job Object")
     }
 }
+
+actual fun hideConsole(): Unit {
+    ShowWindow(GetConsoleWindow(), SW_HIDE)
+    EnableWindow(GetConsoleWindow(), FALSE)
+}

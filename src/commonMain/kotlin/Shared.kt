@@ -3,11 +3,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import platform.posix.*
-import platform.windows.TRUE
 
 object Shared {
     @Serializable
-    data class Config(val groupName: String, val directory: String = ".", val execute: String)
+    data class Config(val groupName: String, val directory: String = ".", val execute: String, val hideConsole: Boolean = false)
     private val json = Json {
         prettyPrint = true
         encodeDefaults = true
