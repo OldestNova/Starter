@@ -6,7 +6,7 @@ import platform.posix.*
 
 object Shared {
     @Serializable
-    data class Config(val groupName: String, val directory: String = ".", val execute: String, val hideConsole: Boolean = false)
+    data class Config(val groupName: String, val directory: String = ".", val execute: String, val hideConsole: Boolean = false, val elevated: Boolean = false)
     private val json = Json {
         prettyPrint = true
         encodeDefaults = true
@@ -16,7 +16,7 @@ object Shared {
         if (access("starter-config.json", F_OK) != 0) {
             val defaultConfig = Config("group-bane", execute = "want-to-execute.exe")
             val defaultConfigString = json.encodeToString(defaultConfig)
-            val file = fopen("config.json", "w") ?: throw IllegalArgumentException("Cannot open input file")
+            val file = fopen("starter-config.json", "w") ?: throw IllegalArgumentException("Cannot open input file")
             try {
                 fputs(defaultConfigString, file)
             } finally {

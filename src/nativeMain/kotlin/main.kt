@@ -9,7 +9,12 @@ fun main(args: Array<String>) {
             hideConsole()
         }
         val (_, status) = runBlocking {
-            executeCommandAndCaptureOutput(listOf(config.execute, *args), ExecuteCommandOptions(config.directory, abortOnError = false, redirectStderr = true, trim = false))
+            if (config.elevated && !isElevated()) {
+                elevateSelfAndRun(args)
+                Pair("", 0) // Placeholder, as elevateSelfAndRun does not return a value
+            } else {
+                executeCommandAndCaptureOutput(listOf(config.execute, *args), ExecuteCommandOptions(config.directory, abortOnError = false, redirectStderr = true, trim = false))
+            }
         }
         exitProcess(status)
     } catch (e: Throwable) {

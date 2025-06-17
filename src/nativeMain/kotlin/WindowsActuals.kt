@@ -1,6 +1,7 @@
 import kotlinx.cinterop.*
 import platform.posix.*
 import platform.windows.*
+import kotlin.system.exitProcess
 
 actual suspend fun findExecutable(executable: String): String =
     executable
@@ -19,8 +20,8 @@ actual suspend fun executeCommandAndCaptureOutput(
     }
     println("executing: $commandToExecute")
     val redirect = if (options.redirectStderr) " 2>&1 " else ""
-    val fp = _popen("$commandToExecute $redirect", "r") ?: error("Failed to run command: $command")
-
+    val path = "$commandToExecute $redirect";
+    val fp = _popen(path, "r") ?: error("Failed to run command: $command")
     val stdout = buildString {
         val buffer = ByteArray(4096)
         while (true) {
@@ -37,6 +38,7 @@ actual suspend fun executeCommandAndCaptureOutput(
     }
 
     return Pair(if (options.trim) stdout.trim() else stdout, status)
+
 }
 
 actual fun makeProcessGroup(name: String): Unit {
@@ -84,4 +86,61 @@ actual fun makeProcessGroup(name: String): Unit {
 actual fun hideConsole(): Unit {
     ShowWindow(GetConsoleWindow(), SW_HIDE)
     EnableWindow(GetConsoleWindow(), FALSE)
+}
+
+actual fun elevateSelfAndRun(args: Array<String>) {
+    memScoped {
+        val exePathBuffer = allocArray<ByteVar>(MAX_PATH)
+        val len = GetModuleFileNameA(null, exePathBuffer, MAX_PATH.toUInt())
+        if (len == 0u) {
+            fprintf(stderr, "Failed to get executable path. Error: %lu\n", GetLastError().toULong())
+            return
+        }
+
+        val exePath = exePathBuffer.toKString()
+        val parameters = buildString {
+            for (arg in args) {
+                append(' ')
+                if (arg.contains(' ')) append('"').append(arg).append('"') else append(arg)
+            }
+        }.trim()
+
+        val sei = alloc<SHELLEXECUTEINFOA>().apply {
+            cbSize = sizeOf<SHELLEXECUTEINFOA>().toUInt()
+            fMask = SEE_MASK_NOCLOSEPROCESS.toUInt()
+            lpVerb = "runas".cstr.ptr
+            lpFile = exePath.cstr.ptr
+            lpParameters = parameters.cstr.ptr
+            nShow = SW_SHOWNORMAL
+        }
+
+        if (ShellExecuteExA(sei.ptr) == 0) {
+            fprintf(stderr, "Failed to elevate process. Error: %lu\n", GetLastError().toULong())
+        } else {
+            WaitForSingleObject(sei.hProcess, INFINITE)
+            CloseHandle(sei.hProcess)
+        }
+    }
+}
+
+actual fun isElevated(): Boolean {
+    memScoped {
+        val token = alloc<HANDLEVar>()
+        if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY.toUInt(), token.ptr) == 0) {
+            return false
+        }
+
+        val elevation = alloc<TOKEN_ELEVATION>()
+        val returnLength = alloc<DWORDVar>()
+        val result = GetTokenInformation(
+            token.value,
+            TokenElevation,
+            elevation.ptr,
+            sizeOf<TOKEN_ELEVATION>().toUInt(),
+            returnLength.ptr
+        )
+
+        CloseHandle(token.value)
+        return result != 0 && elevation.TokenIsElevated != 0u
+    }
 }

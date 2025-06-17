@@ -16,3 +16,7 @@ expect fun makeProcessGroup(name: String): Unit
 expect suspend fun findExecutable(executable: String): String
 
 expect fun hideConsole(): Unit
+
+expect fun elevateSelfAndRun(args: Array<String>): Unit
+
+expect fun isElevated(): Boolean
