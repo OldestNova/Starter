@@ -20,3 +20,6 @@ Starter 需要一个 `starter-config.json` 文件来配置启动器的行为。
 - `execute` 用于指定子进程的可执行文件名
 - `hideConsole` 用于指定是否隐藏控制台窗口，默认为 `false`
 - `elevated` 用于指定是否以管理员权限启动子进程，默认为 `false`
+
+## LICENSE
+MIT License
