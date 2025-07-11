@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
                 elevateSelfAndRun(args)
                 Pair("", 0) // Placeholder, as elevateSelfAndRun does not return a value
             } else {
-                executeCommandAndCaptureOutput(listOf(config.execute, *args), ExecuteCommandOptions(config.directory, abortOnError = false, redirectStderr = true, trim = false))
+                executeCommandAndCaptureOutput(listOf(config.execute, *config.extraArgs, *args), ExecuteCommandOptions(config.directory, abortOnError = false, redirectStderr = true, trim = false))
             }
         }
         exitProcess(status)

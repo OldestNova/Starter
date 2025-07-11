@@ -10,6 +10,7 @@ Starter 需要一个 `starter-config.json` 文件来配置启动器的行为。
   "groupName": "app-group", 
   "directory": ".", 
   "execute": "app.exe",
+  "extraArgs": [],
   "hideConsole": false,
   "elevated": false
 }
@@ -18,6 +19,7 @@ Starter 需要一个 `starter-config.json` 文件来配置启动器的行为。
 - `groupName` 用于标识 JobObject 的名称。唯一即可
 - `directory` 用于指定子进程的工作目录，可选，默认为 `.` 即当前目录
 - `execute` 用于指定子进程的可执行文件名
+- `exreaArgs` 用于添加附加参数，字符串数组，默认为空数组
 - `hideConsole` 用于指定是否隐藏控制台窗口，默认为 `false`
 - `elevated` 用于指定是否以管理员权限启动子进程，默认为 `false`
 
