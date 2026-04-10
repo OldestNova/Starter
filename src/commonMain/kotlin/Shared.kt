@@ -6,7 +6,15 @@ import platform.posix.*
 
 object Shared {
     @Serializable
-    data class Config(val groupName: String, val directory: String = ".", val execute: String, val hideConsole: Boolean = false, val elevated: Boolean = false, val extraArgs: Array<String> = emptyArray()) {
+    data class Config(
+        val groupName: String,
+        val directory: String = ".",
+        val execute: String,
+        val hideConsole: Boolean = false,
+        val elevated: Boolean = false,
+        val passthroughParent: Boolean = false,
+        val extraArgs: Array<String> = emptyArray()
+    ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
 
@@ -17,6 +25,7 @@ object Shared {
             if (execute != other.execute) return false
             if (hideConsole != other.hideConsole) return false
             if (elevated != other.elevated) return false
+            if (passthroughParent != other.passthroughParent) return false
             if (!extraArgs.contentEquals(other.extraArgs)) return false
 
             return true
@@ -28,6 +37,7 @@ object Shared {
             result = 31 * result + execute.hashCode()
             result = 31 * result + hideConsole.hashCode()
             result = 31 * result + elevated.hashCode()
+            result = 31 * result + passthroughParent.hashCode()
             result = 31 * result + extraArgs.contentHashCode()
             return result
         }

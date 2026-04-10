@@ -12,7 +12,8 @@ Starter 需要一个 `starter-config.json` 文件来配置启动器的行为。
   "execute": "app.exe",
   "extraArgs": [],
   "hideConsole": false,
-  "elevated": false
+  "elevated": false,
+  "passthroughParent": false
 }
 ```
 
@@ -22,6 +23,7 @@ Starter 需要一个 `starter-config.json` 文件来配置启动器的行为。
 - `exreaArgs` 用于添加附加参数，字符串数组，默认为空数组
 - `hideConsole` 用于指定是否隐藏控制台窗口，默认为 `false`
 - `elevated` 用于指定是否以管理员权限启动子进程，默认为 `false`
+- `passthroughParent` 用于指定是否将当前应用父进程名写入环境变量 `OVERRIDE_PARENT_APP`，默认为 `false`
 
 ## LICENSE
 MIT License

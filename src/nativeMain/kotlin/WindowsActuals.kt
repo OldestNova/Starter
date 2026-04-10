@@ -144,3 +144,56 @@ actual fun isElevated(): Boolean {
         return result != 0 && elevation.TokenIsElevated != 0u
     }
 }
+
+private typealias NtQueryInformationProcessFn =
+    CFunction<(HANDLE?, UInt, COpaquePointer?, UInt, CPointer<UIntVar>?) -> Int>
+
+actual fun getParentProcessName(): String? {
+    val ntdll = GetModuleHandleA("ntdll.dll") ?: return null
+    val ntQueryProc = GetProcAddress(ntdll, "NtQueryInformationProcess") ?: return null
+    val ntQuery = ntQueryProc.reinterpret<NtQueryInformationProcessFn>()
+
+    val parentPid = memScoped {
+        // PROCESS_BASIC_INFORMATION for ProcessBasicInformation(0) is pointer-sized fields.
+        // InheritedFromUniqueProcessId is the 6th field in this layout.
+        val info = allocArray<ULongVar>(6)
+        val status = ntQuery(
+            GetCurrentProcess(),
+            0u,
+            info.reinterpret(),
+            (6 * sizeOf<ULongVar>()).toUInt(),
+            null
+        )
+        if (status != 0) {
+            return null
+        }
+
+        info[5].toUInt()
+    }
+
+    if (parentPid == 0u) return null
+
+    val parentHandle = OpenProcess(PROCESS_QUERY_INFORMATION.toUInt(), FALSE, parentPid)
+        ?: return null
+
+    return try {
+        memScoped {
+            val pathSize = 32767u
+            val size = alloc<DWORDVar>().apply { value = pathSize }
+            val pathBuffer = allocArray<ByteVar>(pathSize.toInt())
+
+            if (QueryFullProcessImageNameA(parentHandle, 0u, pathBuffer, size.ptr) == 0) {
+                return null
+            }
+
+            val fullPath = pathBuffer.toKString()
+            fullPath.substringAfterLast('\\').removeSuffix(".exe")
+        }
+    } finally {
+        CloseHandle(parentHandle)
+    }
+}
+
+actual fun setOverrideParentApp(value: String): Boolean {
+    return _putenv_s("OVERRIDE_PARENT_APP", value) == 0
+}

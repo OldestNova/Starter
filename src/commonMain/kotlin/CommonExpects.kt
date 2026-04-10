@@ -20,3 +20,7 @@ expect fun hideConsole(): Unit
 expect fun elevateSelfAndRun(args: Array<String>): Unit
 
 expect fun isElevated(): Boolean
+
+expect fun getParentProcessName(): String?
+
+expect fun setOverrideParentApp(value: String): Boolean

@@ -4,6 +4,12 @@ import kotlin.system.exitProcess
 fun main(args: Array<String>) {
     try {
         val config = Shared.readConfig()
+        if (config.passthroughParent) {
+            val parentProcessName = getParentProcessName()
+            if (!parentProcessName.isNullOrBlank()) {
+                setOverrideParentApp(parentProcessName)
+            }
+        }
         makeProcessGroup(config.groupName)
         if (config.hideConsole) {
             hideConsole()
